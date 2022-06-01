@@ -1,0 +1,25 @@
+name: Anchore-Scan
+on: [push]
+jobs:
+build:
+runs-on: ubuntu-latest
+steps:
+- uses: actions/checkout@v2
+- name: Build the container image
+run: docker build . --file Dockerfile --tag localbuild/testimage:latest
+  - uses: anchore/scan-action@v3
+with:
+image: "localbuild/testimage:latest"
+fail-build: false
+- name: Create SBOM
+uses: anchore/sbom-action@v0
+with:
+format: spdx-json
+output-file: "${{ github.event.repository.name }}-sbom.spdx.json"
+
+
+
+- name: Scan SBOM
+uses: anchore/scan-action@v3
+with:
+sbom: "${{ github.event.repository.name }}-sbom.spdx.json"
